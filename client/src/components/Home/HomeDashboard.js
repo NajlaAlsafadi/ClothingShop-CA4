@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './HomeDashboard.css';
+
+
 function HomeDashboard() {
     const [searchTerm, setSearchTerm] = useState('');
     const [products, setProducts] = useState([]);
     const [sortField, setSortField] = useState('title');
     const [sortDir, setSortDir] = useState('asc');
     const [currentPage, setCurrentPage] = useState(0);
-    const [pageSize, setPageSize] = useState(5);
+    const [pageSize] = useState(5);
+    const [showDropdown, setShowDropdown] = useState(false);
+    const navigate = useNavigate();
+
+   
 
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);
@@ -44,7 +51,15 @@ function HomeDashboard() {
                 onChange={handleSearchChange}
             />
             <button type="submit">Search</button>
-            <button onClick={() => console.log('Navigating to create account')}>Create Account</button>
+            <div className="account-actions">
+          <button onClick={() => setShowDropdown(!showDropdown)}>Account</button>
+          {showDropdown && (
+              <div className="dropdown-menu">
+                  <button onClick={() => navigate('/auth')}>Sign In</button>
+              </div>
+          )}
+      </div>
+
             <button onClick={() => console.log('Navigating to cart')}>Cart</button>
         </form>
             <select value={sortField} onChange={e => setSortField(e.target.value)}>

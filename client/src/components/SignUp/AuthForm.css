@@ -1,50 +1,62 @@
 .form-container {
-    position: relative;
-    max-width: 300px;
-    margin: auto;
-    overflow: hidden;
-  }
-  
-  .sign-in-form, .sign-up-form {
-    position: relative;
-    top: 0;
-    left: 0;
-    padding: 5px;
-    right: 0;
-    transition: transform 0.3s ease-in-out;
-  }
-  
-  .sign-up-form {
-    transform: translateX(100%);
-  }
-  
-  .form-container.sign-up-active .sign-in-form {
-    transform: translateX(-100%);
-  }
-  
-  .form-container.sign-up-active .sign-up-form {
-    transform: translateX(0);
-  }
-  
-  .form-container input,
-  .form-container button {
-    width: 90%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
-  .form-container button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-  }
-  
-  .form-container p {
-    color: #007bff;
-    text-align: center;
-    cursor: pointer;
-  }
-  
-  
+  position: relative;
+  max-width: 300px;
+  margin: 50px auto;
+  background: #f9f9f9;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 20px;
+}
+
+.sign-in-form, .sign-up-form {
+  position: relative;
+  width: 100%;
+  transition: transform 0.5s ease-in-out;
+}
+
+.sign-up-form {
+  transform: translateX(100%);
+}
+
+.form-container.sign-up-active .sign-in-form {
+  transform: translateX(-100%);
+}
+
+.form-container.sign-up-active .sign-up-form {
+  transform: translateX(0);
+}
+
+.form-container input,
+.form-container button {
+  width: calc(100% - 20px);
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  box-sizing: border-box; 
+}
+
+.form-container button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.form-container button:hover {
+  background-color: #0056b3;
+}
+
+.form-container p {
+  margin: 10px 0 0;
+  color: #007bff;
+  text-align: center;
+  cursor: pointer;
+}
+
+.form-container p:hover {
+  text-decoration: underline;
+}

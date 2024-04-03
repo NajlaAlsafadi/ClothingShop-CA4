@@ -1,9 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect  } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './HomeDashboard.css';
+import { useAuth  } from '../Context/AuthContext';
+import { useCart } from '../Context/CartContext';
+import CustomerActions from '../Customer/CustomerActions';
 
 
 function HomeDashboard() {
+    const { addToCart } = useCart();
+    const { isLoggedIn, logout } = useAuth();
+    const { isCustomer, isAdmin } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
     const [products, setProducts] = useState([]);
     const [sortField, setSortField] = useState('title');
@@ -13,8 +19,13 @@ function HomeDashboard() {
     const [showDropdown, setShowDropdown] = useState(false);
     const navigate = useNavigate();
 
-   
-
+    const handleLogout = () => {
+        logout(); 
+        navigate('/'); 
+    };
+    const handleAddToCart = (product) => {
+        addToCart(product);
+    };
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);
     };
@@ -24,6 +35,9 @@ function HomeDashboard() {
         fetchProducts(currentPage, pageSize, sortField, sortDir, searchTerm);
     };
 
+    useEffect(() => {
+        fetchProducts(0, pageSize, sortField, sortDir, '');
+    }, []);
     const fetchProducts = async (page, size, sort, direction, term) => {
         try {
             const response = await fetch(`/api/products/search?searchTerm=${encodeURIComponent(term)}&page=${page}&size=${size}&sort=${sort},${direction}`);
@@ -39,7 +53,13 @@ function HomeDashboard() {
         setCurrentPage(newPage);
         fetchProducts(newPage, pageSize, sortField, sortDir, searchTerm);
     };
+    if (isAdmin) {
+       //update with admin logic
+    }
 
+    if (isCustomer) {
+        //update with customer logic
+    }
     return (
         <div>
             <h1>Welcome to Najla's Clothes Shop</h1>
@@ -54,13 +74,23 @@ function HomeDashboard() {
             <div className="account-actions">
           <button onClick={() => setShowDropdown(!showDropdown)}>Account</button>
           {showDropdown && (
-              <div className="dropdown-menu">
-                  <button onClick={() => navigate('/auth')}>Sign In</button>
-              </div>
-          )}
+                    <div className="dropdown-menu">
+                         {isLoggedIn ? (
+                            <>
+                                <button onClick={handleLogout}>Sign Out</button>
+                                
+                            </>
+                        ) : (
+                            <button onClick={() => navigate('/auth')}>Sign In</button>
+                        )}
+                        
+                    </div>
+                )}
+                {isCustomer && (
+                                        <button onClick={() => navigate('/cart')}>View Cart</button>
+                                    )}
       </div>
 
-            <button onClick={() => console.log('Navigating to cart')}>Cart</button>
         </form>
             <select value={sortField} onChange={e => setSortField(e.target.value)}>
                 <option value="title">Title</option>
@@ -84,6 +114,9 @@ function HomeDashboard() {
                                 <p>Category: {product.category}</p>
                                 <p>Current Stock: {product.quantity}</p>
                                 <img src={product.imageUrl} alt={product.title} style={{ maxWidth: '100px', maxHeight: '100px' }} />
+                                {isCustomer && (
+                                    <button onClick={() => addToCart(product)}>Add to Cart</button>
+                                )}
                             </li>
                         ))}
                     </ul>
@@ -101,6 +134,7 @@ function HomeDashboard() {
                 </button>
                 <p>Page: {currentPage + 1}</p>
             </div>
+            {/* {isCustomer && <CustomerActions products={products} />} */}
         </div>
     );
 }

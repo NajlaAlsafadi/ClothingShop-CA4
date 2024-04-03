@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../Context/AuthContext';
 
 const SignInForm = ({ onToggle }) => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = async (event) => {
@@ -21,8 +23,9 @@ const SignInForm = ({ onToggle }) => {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        console.log('Sign in successful', data);
+        const userData = await response.json();
+        console.log('Sign in successful', userData);
+        login(userData);
         navigate('/'); 
       } else {
         console.error('Sign in failed');

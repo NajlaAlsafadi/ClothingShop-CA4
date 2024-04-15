@@ -4,6 +4,7 @@ import './HomeDashboard.css';
 import { useAuth  } from '../Context/AuthContext';
 import { useCart } from '../Context/CartContext';
 import CustomerActions from '../Customer/CustomerActions';
+import Product from '../Product';
 
 
 function HomeDashboard() {
@@ -104,22 +105,11 @@ function HomeDashboard() {
 
             <div>
                 {products.length > 0 ? (
-                    <ul>
-                        {products.map((product) => (
-                            <li key={product.id}>
-                                <h3>{product.title}</h3>
-                                <p>Manufacturer: {product.manufacturer}</p>
-                                <p>{product.description}</p>
-                                <p>Price: €{product.price}</p>
-                                <p>Category: {product.category}</p>
-                                <p>Current Stock: {product.quantity}</p>
-                                <img src={product.imageUrl} alt={product.title} style={{ maxWidth: '100px', maxHeight: '100px' }} />
-                                {isCustomer && (
-                                    <button onClick={() => addToCart(product)}>Add to Cart</button>
-                                )}
-                            </li>
-                        ))}
-                    </ul>
+                 <ul>
+                 {products.map((product) => (
+                     <Product key={product.id} product={product} />
+                 ))}
+             </ul>
                 ) : (
                     <p>No products found</p>
                 )}

@@ -24,7 +24,7 @@
     margin: 0;
   }
   
-  .cart-price, .cart-quantity {
+  .cart-price, .cart-quantity, .cart-category {
     color: #666;
     font-size: 16px;
   }

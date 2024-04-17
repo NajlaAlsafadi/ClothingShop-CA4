@@ -8,7 +8,7 @@ const SignUpForm = ({ onToggle }) => {
     password: '',
     street: '',
     city: '',
-    zipcode: '',
+    zipCode: '',
     country: '',
     cardNumber: '',
     expiryDate: '',
@@ -26,7 +26,7 @@ const SignUpForm = ({ onToggle }) => {
     }
     if (currentStep === 2) {
       //regex for zip code validation 
-      if (!/^[a-zA-Z0-9]{6,8}$/.test(formData.zipcode)) {
+      if (!/^[a-zA-Z0-9]{6,8}$/.test(formData.zipCode)) {
         errors.zipcode = 'Zip code must be 6-8 letters/numbers';
       }
     }
@@ -150,7 +150,7 @@ const SignUpForm = ({ onToggle }) => {
           />
           <input
             type="text"
-            name="zipcode"
+            name="zipCode"
             placeholder="Zipcode"
             value={formData.zipcode}
             onChange={handleChange}

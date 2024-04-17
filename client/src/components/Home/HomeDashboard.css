@@ -1,97 +1,122 @@
-body {
-    font-family: 'Arial', sans-serif;
+.dashboard-container {
+    padding: 20px;
+    margin: auto;
+    max-width: 1200px;
 }
 
-/* main heading*/
-h1 {
-    text-align: center;
-    color: #333;
+.dashboard-header {
+    margin-bottom: 20px;
 }
 
 /*search and sort areas */
-.search-area {
+.search-sort-section {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     margin-bottom: 20px;
-    
 }
 
-/*search input field */
-.search-area input {
-    width: 100%; 
+.search-input {
     padding: 10px;
+    width: 60%;
+    font-size: 16px;
     border: 1px solid #ccc;
-    border-radius: 20px;
-    outline: none;
+    border-radius: 5px;
 }
 
-button {
+.search-button {
     padding: 10px 20px;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
     background-color: #007bff;
     color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
 }
 
-
-button:hover {
+.search-button:hover {
     background-color: #0056b3;
 }
 
-
-button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-}
-
-/* container for sort controls to align items */
-.sort-area {
+/* Admin Button Styles */
+.admin-buttons {
     display: flex;
-    width: 60%; 
-    justify-content: center;
-    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0px;
 }
 
-/* select dropdowns in the sort area */
-.sort-area select {
-    padding: 10px;
-    margin: 0 10px;
-    border-radius: 20px;
-    border: 1px solid #007bff;
+.admin-button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
     cursor: pointer;
-    font-size: 1rem;
-    background-color: white;
-    color: #007bff;
-}
-/* layout for product items */
-ul {
-    list-style: none;
-    padding: 0s;
-    display:  grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 10px;
-    margin: 20px auto;
-    width: 90%;
+    margin-right:2px;
+    transition: background-color 0.3s ease-in-out;
 }
 
-/* individual product item stlyling */
-li {
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 20px;
+.admin-button:hover {
+    background-color: #45a049;
+}
+
+/* Product Listing */
+.product-listing {
+    list-style-type: none;
+    padding: 0;
+}
+
+.product-item {
+    margin-bottom: 20px;
+}
+
+.account-actions {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    margin-bottom: 0px; 
+}
+
+.account-button, .cart-button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s; 
+}
+
+.account-button:hover, .cart-button:hover {
+    background-color: #45a049; 
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%; 
     background-color: #f9f9f9;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+    padding: 12px 16px;
+    z-index: 1;
+    border-radius: 5px; 
 }
 
-/* product images fit within their item boxes */
-li img {
-    max-width: 100%;
-    max-height: 150px;
+.dropdown-menu button {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
     display: block;
-    margin: 0 auto 20px;
+    width: 100%; 
+    text-align: left; 
 }
 
-/* Flexbox layout for pagination controls */
+.dropdown-menu button:hover {
+    background-color: #f1f1f1;
+}
+
+/* Pagination */
 .pagination {
     display: flex;
     justify-content: center;
@@ -99,49 +124,45 @@ li img {
     margin-top: 20px;
 }
 
-/* Styling and layout for form elements  */
-.form-inline {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px; 
+.page-button {
+    padding: 10px 15px;
+    margin: 0 5px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
 }
 
-/* adjustments for inputs and buttons within the form */
-.form-inline input, .form-inline button {
-    flex: 1; 
-    margin: 15px;
+.page-button:hover {
+    background-color: #218838;
+}
+
+.page-button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.page-info {
+    font-size: 16px;
+}
+
+.select-dropdown {
     padding: 10px;
-    border-radius: 20px;
+    border-radius: 5px;
     border: 1px solid #ccc;
 }
-.account-actions {
-    position: relative;
- 
+
+.update-stock-btn, .add-to-cart-btn {
+    margin-top: 10px;
+    background-color: #ff9800;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
 }
 
-.dropdown-menu {
-    position: fixed;
-    right: 0;
-    background-color: #f9f9f9;
-    border: 1px solid #ccc;
-    padding: 5px;
-    margin-top: 5px;
-    display: flex;
-    flex-direction: column;
+.update-stock-btn:hover, .add-to-cart-btn:hover {
+    background-color: #fb8c00;
 }
-
-.dropdown-menu button {
-    /* width: fit-content; */
-    margin-bottom: 5px;
-    background-color: white;
-    color: #007bff;
-    text-align: center;
-}
-
-.dropdown-menu button:last-child {
-    margin-bottom: 0;
-}
-
-

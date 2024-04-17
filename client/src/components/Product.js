@@ -1,58 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from './Context/AuthContext';
 import { useCart } from './Context/CartContext';
-import ReviewForm from './Customer/ReviewForm'; 
+import './Product.css'; 
 
-const Product = ({ product }) => {
-    const { isCustomer } = useAuth();
+const Product = ({ product, onUpdateStock  }) => {
+    const { isCustomer , isAdmin} = useAuth();
     const { addToCart } = useCart();
-    const [reviews, setReviews] = useState([]);
+    const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchReviews = async () => {
-            try {
-                const response = await fetch(`/api/products/${product.id}/reviews`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch reviews');
-                }
-                const data = await response.json();
-                setReviews(data); 
-            } catch (error) {
-                console.error('Fetch error:', error);
-            }
-        };
-
-        fetchReviews();
-    }, [product.id]);
-
-    const handleReviewSubmit = (newReview) => {
-        setReviews([...reviews, newReview]);
+    const goToProductDetail = () => {
+        navigate(`/product/${product.id}`);
     };
 
     return (
-        <div>
-            <h3>{product.title}</h3>
-            <p>Manufacturer: {product.manufacturer}</p>
-            <p>Description: {product.description}</p>
-            <p>Price: €{product.price}</p>
-            <p>Category: {product.category}</p>
-            <p>Stock: {product.quantity}</p>
-            <img src={product.imageUrl} alt={product.title} style={{ maxWidth: '100px', maxHeight: '100px' }} />
-            {isCustomer && (
-                <>
-                    <button onClick={() => addToCart(product)}>Add to Cart</button>
-                    <ReviewForm productId={product.id} onReviewSubmit={handleReviewSubmit} />
-                </>
-            )}
-            <div>
-                {reviews.map((review) => (
-                    <div key={review.id}>
-                        <strong>{review.username}: </strong>
-                        <span>{'⭐'.repeat(review.rating)}</span>
-                        <p>{review.comment}</p>
-                    </div>
-                ))}
+        <div className="product-container">
+            <div className="product-header" onClick={goToProductDetail}>
+                <h3>{product.title}</h3>
+                <img src={product.imageUrl} alt={product.title} className="product-image" />
+                <p className="product-price">Price: €{product.price}</p>
             </div>
+            <p className="product-info">Manufacturer: {product.manufacturer}</p>
+            <p className="product-info">Description: {product.description}</p>
+            <p className="product-info">Category: {product.category}</p>
+            <p className="product-info">Stock: {product.quantity}</p>
+            {isCustomer && (
+                <button onClick={() => addToCart(product)} className="add-to-cart-btn">Add to Cart</button>
+            )}
+             {isAdmin && (
+                <button onClick={() => onUpdateStock(product)} className="update-stock-btn">Update Stock</button>                        )}
         </div>
     );
 };

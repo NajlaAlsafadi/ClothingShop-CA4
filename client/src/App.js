@@ -11,6 +11,7 @@ import CustomerDetailsPage from './components/Admin/CustomerDetailsPage';
 import ProductDetail from './components/ProductDetail';
 import CustomersPage from './components/Admin/CustomersPage';
 import OrderSuccessPage from './components/Customer/OrderSuccessPage';
+import CustomerProfile from './components/Customer/CustomerProfile';
 
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
         <Route path="/admin/customers" element={<CustomersPage />} />
         <Route path="/Admin/customers/:customerId" element={<CustomerDetailsPage />} />
         <Route path="/order-success" element={<OrderSuccessPage/>} />
+        <Route path="/profile/:customerId" element={<CustomerProfile/>} />
 
         </Routes>
         </CartProvider>

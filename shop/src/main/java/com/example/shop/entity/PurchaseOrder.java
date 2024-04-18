@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -27,12 +28,14 @@ public class PurchaseOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @ManyToOne(optional = false)
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PurchaseItem> quantities = new ArrayList<>();
+
 
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus; 
@@ -40,13 +43,5 @@ public class PurchaseOrder {
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus; 
     private Date orderDate;
- 
-    @ManyToOne
-    @JoinColumn(name = "address_id")
-    private Address shippingAddress;
-
-    @ManyToOne
-    @JoinColumn(name = "payment_method_id")
-    private PaymentMethod paymentMethod;
-
+    private double totalAmount; 
 }

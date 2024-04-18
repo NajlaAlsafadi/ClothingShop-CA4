@@ -8,5 +8,5 @@ import com.example.shop.entity.PurchaseOrder;
 public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Long> {
     
     List<PurchaseOrder> findByCustomerId(Long customerId);
-    void deleteAll(Set<PurchaseOrder> purchaseOrders);
+   // void deleteAll(Iterable<? extends PurchaseOrder> purchaseOrders);
 }

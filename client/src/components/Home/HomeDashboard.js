@@ -8,7 +8,7 @@ import Product from '../Product';
 import UpdateProductModal from '../Admin/UpdateProductModal';
 function HomeDashboard() {
     const { addToCart } = useCart();
-    const { isLoggedIn, logout } = useAuth();
+    const { isLoggedIn, logout, user } = useAuth();
     const { isCustomer, isAdmin } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
     const [products, setProducts] = useState([]);
@@ -87,6 +87,12 @@ function HomeDashboard() {
                             {isLoggedIn ? (
                                 <>
                                     <button onClick={handleLogout}>Sign Out</button>
+                                    {isCustomer && (
+                                        <>
+                                                 <button onClick={() => navigate(`/profile/${user.id}`)}>View Profile</button>
+                                            <button className="cart-button" onClick={() => navigate('/cart')}>View Cart</button>
+                                        </>
+                                    )}
                                 </>
                             ) : (
                                 <button onClick={() => navigate('/auth')}>Sign In</button>

@@ -7,6 +7,7 @@ import com.example.shop.entity.Address;
 
 public interface AddressRepository extends JpaRepository<Address, Long> {
   
+    
     List<Address> findByCustomerId(Long customerId);
 }
 

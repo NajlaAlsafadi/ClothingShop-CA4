@@ -16,8 +16,8 @@ public class PaymentController {
 
     @PostMapping("/validate-cvv")
     public ResponseEntity<?> validateCVV(@RequestBody CVVValidationDto validationDto) {
-        PaymentMethod paymentMethod = paymentMethodRepository.findByCardNumber(validationDto.getCardNumber().replaceAll("\\s", ""))
-                .orElseThrow(() -> new IllegalArgumentException("Card number not found"));
+        PaymentMethod paymentMethod = paymentMethodRepository.findByCustomerIdAndCardNumber(validationDto.getCustomerId(), validationDto.getCardNumber().replaceAll("\\s", ""))
+                .orElseThrow(() -> new IllegalArgumentException("Card number not found for the customer"));
 
         if (!paymentMethod.matchesCVV(validationDto.getCvv())) {
             return ResponseEntity.badRequest().body("Invalid CVV");

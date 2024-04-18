@@ -7,4 +7,5 @@ import lombok.Data;
 public class CVVValidationDto {
     private String cardNumber;
     private String cvv;
+    private Long customerId; 
 }

@@ -1,5 +1,7 @@
 package com.example.shop.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,10 +23,12 @@ public class ProductReview {
     private int rating;
     private String comment;
 
+    
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;

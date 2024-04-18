@@ -35,10 +35,11 @@ public class PaymentMethod {
         return this.cvv.equals(cvv);
     }
     
+
     public boolean matchesCardNumber(String cardNumber) {
-        return this.cardNumber.replaceAll("\\s", "").equals(cardNumber.replaceAll("\\s", ""));
+        return this.cardNumber.equals(cardNumber);
     }
-    
+
     public boolean isNotExpired() {
         SimpleDateFormat sdf = new SimpleDateFormat("MM/yy");
         sdf.setLenient(false);

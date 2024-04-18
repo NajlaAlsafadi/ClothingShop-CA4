@@ -1,12 +1,14 @@
 package com.example.shop.service;
 
 import com.example.shop.entity.Customer;
+import com.example.shop.entity.LoyaltyCard;
 import com.example.shop.dto.CustomerDetailsDto;
 import com.example.shop.entity.Address;
 import com.example.shop.entity.PaymentMethod;
 import com.example.shop.entity.PurchaseOrder;
 import com.example.shop.entity.Role;
 import com.example.shop.repository.CustomerRepository;
+import com.example.shop.repository.LoyaltyCardRepository;
 import com.example.shop.repository.AddressRepository;
 import com.example.shop.repository.PaymentMethodRepository;
 import com.example.shop.repository.PurchaseOrderRepository;
@@ -17,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,12 +36,15 @@ public class CustomerService {
     private PurchaseOrderRepository purchaseOrderRepository;
     @Autowired
     private PaymentMethodRepository paymentMethodRepository;
+   
+    @Autowired
+    private LoyaltyCardRepository loyaltyCardRepository;
 
     @Transactional
     public Customer registerNewCustomer(Customer customer, Address shippingAddress, PaymentMethod paymentMethod) {
         //Save customer details
         customer.setRole(Role.CUSTOMER);
-        Customer savedCustomer = customerRepository.save(customer);
+       Customer savedCustomer = customerRepository.save(customer);
 
         shippingAddress.setCustomer(savedCustomer);
         addressRepository.save(shippingAddress);
@@ -46,9 +52,20 @@ public class CustomerService {
         paymentMethod.setCustomer(savedCustomer);
         paymentMethodRepository.save(paymentMethod);
         
+        LoyaltyCard loyaltyCard = new LoyaltyCard();
+        loyaltyCard.setCustomer(savedCustomer);
+        loyaltyCard.setPoints(0);  
+        loyaltyCard.setTier("Bronze");  
+        loyaltyCardRepository.save(loyaltyCard);
         return savedCustomer;
     }
-
+    public void updateLoyaltyPoints(Long customerId, int points) {
+        LoyaltyCard card = loyaltyCardRepository.findByCustomerId(customerId);
+        if (card != null) {
+            card.addPoints(points);
+            loyaltyCardRepository.save(card);
+        }
+    }
      public Address getAddressByCustomerId(Long customerId) {
         Optional<Customer> customer = customerRepository.findById(customerId);
         if (customer.isPresent() && customer.get().getShippingAddress() != null) {
@@ -81,4 +98,8 @@ public class CustomerService {
 
         customerRepository.delete(customer);
     }
+    public Customer getCustomerById(Long customerId) {
+        return customerRepository.findById(customerId).orElse(null);
+    }
+    
 }

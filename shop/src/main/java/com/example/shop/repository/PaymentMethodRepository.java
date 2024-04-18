@@ -7,6 +7,6 @@ import com.example.shop.entity.PaymentMethod;
 import java.util.Optional;
 
 public interface PaymentMethodRepository extends JpaRepository<PaymentMethod, Long> {
-    Optional<PaymentMethod> findByCardNumber(String cardNumber);
+    Optional<PaymentMethod> findByCustomerIdAndCardNumber(Long customerId, String cardNumber);
 }
 

@@ -20,6 +20,7 @@ import com.example.shop.repository.PurchaseOrderRepository;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class OrderService {
@@ -32,61 +33,79 @@ public class OrderService {
 
     @Autowired
     private ProductRepository productRepository;
+    
+    @Autowired
+    private LoyaltyCardService loyaltyCardService; 
 
     @Transactional
-    public PurchaseOrder processOrder(OrderConfirmationDto orderDto) {
-        Customer customer = customerRepository.findById(orderDto.getCustomerId())
-            .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
-
-        PaymentMethod paymentMethod = customer.getPaymentMethods().stream()
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("No payment method available"));
-
-        // Check payment validity
-        if (!paymentMethod.matchesCVV(orderDto.getCvv())) {
-            throw new IllegalArgumentException("Invalid CVV");
-        }
-        if (!paymentMethod.matchesCardNumber(orderDto.getCardNumber())) {
-            throw new IllegalArgumentException("Invalid card number");
-        }
-        if (!paymentMethod.isNotExpired()) {
-            throw new IllegalArgumentException("Card has expired");
-        }
-
-        PurchaseOrder order = createAndFillOrder(customer, orderDto);
-        purchaseOrderRepository.save(order);
-        return order;
+public PurchaseOrder processOrder(OrderConfirmationDto orderDto) {
+    Customer customer = customerRepository.findById(orderDto.getCustomerId())
+        .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+    
+    PaymentMethod paymentMethod = customer.getPaymentMethods().stream()
+        .findFirst()
+        .orElseThrow(() -> new IllegalArgumentException("No payment method available"));
+    
+    if (!paymentMethod.matchesCVV(orderDto.getCvv())) {
+        throw new IllegalArgumentException("Invalid CVV");
     }
-
-    private PurchaseOrder createAndFillOrder(Customer customer, OrderConfirmationDto orderDto) {
-        PurchaseOrder order = new PurchaseOrder();
-        order.setCustomer(customer);
-        order.setOrderStatus(OrderStatus.PENDING);
-        order.setPaymentStatus(PaymentStatus.NOT_PAID);
-        order.setOrderDate(new Date());
-
-        fillOrderItems(order, orderDto.getItems());
-        order.setPaymentStatus(PaymentStatus.PAID);
-        return order;
+    if (!paymentMethod.isNotExpired()) {
+        throw new IllegalArgumentException("Card has expired");
     }
+    double totalAmount = 0;
+    for (OrderConfirmationDto.ItemDto item : orderDto.getItems()) {
+        Product product = productRepository.findById(item.getProductId())
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        totalAmount += item.getQuantity() * product.getPrice(); 
+    }
+    PurchaseOrder order = new PurchaseOrder();
+    order.setCustomer(customer);
+    order.setOrderStatus(OrderStatus.PENDING);
+    order.setPaymentStatus(PaymentStatus.NOT_PAID);
+    order.setOrderDate(new Date());
+    order.setTotalAmount(orderDto.getTotalAmount()); 
+
+
+    loyaltyCardService.updatePoints(customer.getId(), orderDto.getTotalAmount());
+    fillOrderItems(order, orderDto.getItems());
+    order.setPaymentStatus(PaymentStatus.PAID);
+    purchaseOrderRepository.save(order); 
+    return order;
+}
+
+    
 
     private void fillOrderItems(PurchaseOrder order, List<ItemDto> items) {
-        items.forEach(itemDto -> {
+        for (ItemDto itemDto : items) {
             Product product = productRepository.findById(itemDto.getProductId())
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
             if (product.getQuantity() < itemDto.getQuantity()) {
                 throw new IllegalArgumentException("Insufficient stock for product: " + product.getTitle());
             }
+            
             product.setQuantity(product.getQuantity() - itemDto.getQuantity());
             productRepository.save(product);
-
+    
             PurchaseItem purchaseItem = new PurchaseItem();
             purchaseItem.setProduct(product);
             purchaseItem.setOrder(order);
             purchaseItem.setQuantity(itemDto.getQuantity());
             order.getQuantities().add(purchaseItem);
-        });
+    
+           
+            purchaseItem.setOrder(order);
+        }
+     
+        purchaseOrderRepository.save(order);
     }
+   
+public PurchaseOrder updateOrderStatus(Long orderId, OrderStatus newStatus) {
+    PurchaseOrder order = purchaseOrderRepository.findById(orderId)
+        .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+    order.setOrderStatus(newStatus);
+    return purchaseOrderRepository.save(order);
+}
+
 }
 
 

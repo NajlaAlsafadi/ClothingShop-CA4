@@ -7,6 +7,8 @@ import com.example.shop.entity.Address;
 import com.example.shop.entity.PaymentMethod;
 import com.example.shop.service.CustomerService;
 
+import jakarta.validation.Valid;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,13 +30,13 @@ public class CustomerController {
     private CustomerService customerService;
 
     @PostMapping("/register")
-    public ResponseEntity<Customer> registerCustomer(@RequestBody CustomerRegistrationDto registrationDto) {
+    public ResponseEntity<Customer> registerCustomer(@Valid @RequestBody CustomerRegistrationDto registrationDto) {
         //set fields fields from DTO
         Customer customer = new Customer();
         customer.setUsername(registrationDto.getUsername());
         customer.setPassword(registrationDto.getPassword());
         customer.setEmail(registrationDto.getEmail());
-        
+      
         Address address = new Address();
         address.setStreet(registrationDto.getStreet());
         address.setCity(registrationDto.getCity());
@@ -66,6 +68,19 @@ public class CustomerController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(customerDetails);
+    }
+    @GetMapping("/{customerId}")
+    public ResponseEntity<Customer> getCustomerById(@PathVariable Long customerId) {
+        try {
+            Customer customer = customerService.getCustomerById(customerId);
+            if (customer != null) {
+                return ResponseEntity.ok(customer);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     @GetMapping("/all")

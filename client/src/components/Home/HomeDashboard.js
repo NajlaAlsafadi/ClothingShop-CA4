@@ -4,7 +4,7 @@ import './HomeDashboard.css';
 import { useAuth } from '../Context/AuthContext';
 import { useCart } from '../Context/CartContext';
 import CustomerActions from '../Customer/CustomerActions';
-import Product from '../Product';
+import Product from '../Product/Product';
 import UpdateProductModal from '../Admin/UpdateProductModal';
 
 function HomeDashboard() {
@@ -80,6 +80,8 @@ function HomeDashboard() {
                     
                 <button className="search-button" type="submit">Search</button>
                 {isAdmin && (
+
+                    
                     <div className="admin-buttons">
                         <button className="admin-button" onClick={() => navigate('/admin/add-product')}>Add New Product</button>
                         <button className="admin-button" onClick={() => navigate('/admin/customers')}>View Customers</button>
@@ -95,6 +97,7 @@ function HomeDashboard() {
                                     <button onClick={handleLogout}>Sign Out</button>
                                     {isCustomer && (
                                         <>
+                                         <button onClick={() => navigate(`/loyalty/${user.id}`)}>View Loaylty Card</button>
                                             <button onClick={() => navigate(`/profile/${user.id}`)}>View Profile</button>
                                             <button className="cart-button" onClick={() => navigate('/cart')}>View Cart</button>
                                         </>

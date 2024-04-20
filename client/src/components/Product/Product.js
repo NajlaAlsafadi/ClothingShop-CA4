@@ -1,16 +1,27 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './Context/AuthContext';
-import { useCart } from './Context/CartContext';
+import { useAuth } from '../Context/AuthContext';
+import { useCart } from '../Context/CartContext';
 import './Product.css'; 
 
 const Product = ({ product, onUpdateStock  }) => {
-    const { isCustomer , isAdmin} = useAuth();
+    const { isCustomer, isAdmin } = useAuth();
     const { addToCart } = useCart();
     const navigate = useNavigate();
 
     const goToProductDetail = () => {
         navigate(`/product/${product.id}`);
+    };
+
+    const handleProductAction = (action, productId) => {
+
+        if (action === 'edit') {
+            navigate(`/edit-product/${productId}`);
+        } else if (action === 'delete') {
+            navigate(`/delete-product/${productId}`);
+        } else if (action === 'Update Stock') {
+            onUpdateStock(product);
+        }
     };
 
     return (
@@ -27,8 +38,17 @@ const Product = ({ product, onUpdateStock  }) => {
             {isCustomer && (
                 <button onClick={() => addToCart(product)} className="add-to-cart-btn">Add to Cart</button>
             )}
-             {isAdmin && (
-                <button onClick={() => onUpdateStock(product)} className="update-stock-btn">Update Stock</button>                        )}
+            {isAdmin && (
+
+                <>
+                    <select onChange={(e) => handleProductAction(e.target.value, product.id)} className="product-action-dropdown">
+                        <option value="">Select Action</option>
+                        <option value="edit">Edit</option>
+                        <option value="delete">Delete</option>
+                        <option value="Update Stock">Update Stock</option>
+                    </select>
+                </>
+            )}
         </div>
     );
 };

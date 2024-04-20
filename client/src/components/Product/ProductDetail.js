@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAuth } from './Context/AuthContext';
-import { useCart } from './Context/CartContext';
-import ReviewForm from './Customer/ReviewForm';
+import { useAuth } from '../Context/AuthContext';
+import { useCart } from '../Context/CartContext';
+import ReviewForm from '../Customer/ReviewForm';
 import './ProductDetail.css';
 
 const ProductDetail = () => {

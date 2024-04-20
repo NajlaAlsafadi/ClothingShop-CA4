@@ -6,12 +6,15 @@ import { CartProvider } from './components/Context/CartContext';
 import AuthForm from './components/SignUp/AuthForm'; 
 import CheckoutForm from './components/Customer/CheckoutForm';
 import Cart from './components/Customer/Cart';
-import AddProductPage from './components/Admin/AddProductPage';
+import AddProductPage from './components/Product/AddProductPage';
 import CustomerDetailsPage from './components/Admin/CustomerDetailsPage';
-import ProductDetail from './components/ProductDetail';
+import ProductDetail from './components/Product/ProductDetail';
 import CustomersPage from './components/Admin/CustomersPage';
 import OrderSuccessPage from './components/Customer/OrderSuccessPage';
 import CustomerProfile from './components/Customer/CustomerProfile';
+import DeleteProductPage from './components/Product/DeleteProductPage';
+import EditProductPage from './components/Product/EditProductPage';
+import CustomerLoyaltyCard from './components/Product/CustomerLoyaltyCard';
 
 
 function App() {
@@ -30,7 +33,9 @@ function App() {
         <Route path="/Admin/customers/:customerId" element={<CustomerDetailsPage />} />
         <Route path="/order-success" element={<OrderSuccessPage/>} />
         <Route path="/profile/:customerId" element={<CustomerProfile/>} />
-
+        <Route path="/loyalty/:customerId" element={<CustomerLoyaltyCard/>} />
+        <Route path="/edit-product/:productId" element={<EditProductPage />} />
+        <Route path="/delete-product/:productId" element={<DeleteProductPage />} />
         </Routes>
         </CartProvider>
       </AuthProvider>

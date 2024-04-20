@@ -42,16 +42,19 @@ public class OrderController {
     
     @PostMapping("/update-status/{orderId}")
     public ResponseEntity<?> updateOrderStatus(@PathVariable Long orderId, @RequestBody Map<String, String> statusBody) {
+        String action = statusBody.get("action");
+        if (!"next".equals(action) && !"prev".equals(action)) {
+            return ResponseEntity.badRequest().body(action);
+        }
+
         try {
-            OrderStatus newStatus = OrderStatus.valueOf(statusBody.get("status"));
-            PurchaseOrder order = orderService.updateOrderStatus(orderId, newStatus);
+            PurchaseOrder order = orderService.updateOrderStatus(orderId, action);
             return ResponseEntity.ok(order);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Invalid order status: " + statusBody.get("status"));
+            return ResponseEntity.badRequest().body("Invalid order status update request: " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating order status: " + e.getMessage());
         }
     }
-    
     
 }

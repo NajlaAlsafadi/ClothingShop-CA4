@@ -31,15 +31,15 @@ function CustomerDetailsPage() {
     if (!customer) {
         return <div className="loading">Loading...</div>;
     }
- 
-    
+
     const calculateTotalItems = (items) => items.reduce((acc, item) => acc + item.quantity, 0);
-    const updateOrderStatus = async (orderId, newStatus) => {
+
+    const updateOrderStatus = async (orderId, currentStatus, action) => {
         try {
             const response = await fetch(`/api/orders/update-status/${orderId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus })  
+                body: JSON.stringify({ action: action })  
             });
             if (response.ok) {
                 const updatedOrder = await response.json();
@@ -59,7 +59,7 @@ function CustomerDetailsPage() {
             alert('Failed to update order status: ' + error.message);
         }
     };
-    
+
     return (
         <div className="customer-details">
             <h1>Customer Details</h1>
@@ -117,16 +117,12 @@ function CustomerDetailsPage() {
                                     </table>
                                 </td>
                                 <td>
-                                    <select defaultValue={order.orderStatus} onChange={(e) => updateOrderStatus(order.id, e.target.value)}>
-                                        <option value="PENDING">Pending</option>
-                                        <option value="SHIPPED">Shipped</option>
-                                        <option value="DELIVERED">Delivered</option>
-                                    </select>
+                                    <button onClick={() => updateOrderStatus(order.id, order.orderStatus, 'next')}>Move to Next State</button>
+                                    <button onClick={() => updateOrderStatus(order.id, order.orderStatus, 'prev')} disabled={order.orderStatus === 'PENDING'}>Move to Previous State</button>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
-
                 </table>
             ) : (
                 <p>No purchase history available.</p>

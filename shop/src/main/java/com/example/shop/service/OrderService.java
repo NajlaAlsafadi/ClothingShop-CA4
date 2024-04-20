@@ -4,6 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.shop.OrderStatusState.DeliveredState;
+import com.example.shop.OrderStatusState.OrderContext;
+import com.example.shop.OrderStatusState.PendingState;
+import com.example.shop.OrderStatusState.ShippedState;
 import com.example.shop.dto.OrderConfirmationDto;
 import com.example.shop.dto.OrderConfirmationDto.ItemDto;
 import com.example.shop.entity.Customer;
@@ -73,8 +77,6 @@ public PurchaseOrder processOrder(OrderConfirmationDto orderDto) {
     return order;
 }
 
-    
-
     private void fillOrderItems(PurchaseOrder order, List<ItemDto> items) {
         for (ItemDto itemDto : items) {
             Product product = productRepository.findById(itemDto.getProductId())
@@ -99,13 +101,29 @@ public PurchaseOrder processOrder(OrderConfirmationDto orderDto) {
         purchaseOrderRepository.save(order);
     }
    
-public PurchaseOrder updateOrderStatus(Long orderId, OrderStatus newStatus) {
-    PurchaseOrder order = purchaseOrderRepository.findById(orderId)
-        .orElseThrow(() -> new IllegalArgumentException("Order not found"));
-    order.setOrderStatus(newStatus);
-    return purchaseOrderRepository.save(order);
-}
-
+    public PurchaseOrder updateOrderStatus(Long orderId, String status) {
+        PurchaseOrder order = purchaseOrderRepository.findById(orderId)
+            .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+    
+        OrderContext context = new OrderContext();
+        if (order.getOrderStatus() == OrderStatus.PENDING) {
+            context.setState(new PendingState());
+        } else if (order.getOrderStatus() == OrderStatus.SHIPPED) {
+            context.setState(new ShippedState());
+        } else if (order.getOrderStatus() == OrderStatus.DELIVERED) {
+            context.setState(new DeliveredState());
+        }
+    
+        if ("next".equals(status)) {
+            context.next();
+        } else if ("prev".equals(status)) {
+            context.prev();
+        }
+    
+        order.setOrderStatus(OrderStatus.valueOf(context.getState().toString()));
+        purchaseOrderRepository.save(order);
+        return order;
+    }
 }
 
 

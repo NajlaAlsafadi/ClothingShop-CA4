@@ -6,6 +6,7 @@ import { useCart } from '../Context/CartContext';
 import CustomerActions from '../Customer/CustomerActions';
 import Product from '../Product';
 import UpdateProductModal from '../Admin/UpdateProductModal';
+
 function HomeDashboard() {
     const { addToCart } = useCart();
     const { isLoggedIn, logout, user } = useAuth();
@@ -15,21 +16,20 @@ function HomeDashboard() {
     const [sortField, setSortField] = useState('title');
     const [sortDir, setSortDir] = useState('asc');
     const [currentPage, setCurrentPage] = useState(0);
-    const [pageSize] = useState(3); 
+    const [pageSize] = useState(3);
     const [showDropdown, setShowDropdown] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetchProducts(0, pageSize, sortField, sortDir, '');
-    }, [pageSize, sortField, sortDir]);  
+        fetchProducts(currentPage, pageSize, sortField, sortDir, searchTerm);
+    }, [currentPage, pageSize, sortField, sortDir, searchTerm]);
 
     const handleLogout = () => {
         logout();
         navigate('/');
     };
-
 
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);
@@ -37,28 +37,28 @@ function HomeDashboard() {
 
     const handleSearchSubmit = async (e) => {
         e.preventDefault();
-        fetchProducts(currentPage, pageSize, sortField, sortDir, searchTerm);
+        fetchProducts(0, pageSize, sortField, sortDir, searchTerm);
     };
-    
+
     const handleUpdateStock = (product) => {
         setSelectedProduct(product);
         setShowUpdateModal(true);
     };
-
+    const [searchType, setSearchType] = useState('title');
     const fetchProducts = async (page, size, sort, direction, term) => {
-        try {
-            const response = await fetch(`/api/products/search?searchTerm=${encodeURIComponent(term)}&page=${page}&size=${size}&sort=${sort},${direction}`);
-            if (!response.ok) throw new Error('Search failed');
+        const response = await fetch(`/api/products/search?type=${searchType}&searchTerm=${encodeURIComponent(term)}&page=${page}&size=${size}&sort=${sort},${direction}`);
+        if (response.ok) {
             const data = await response.json();
             setProducts(data.content);
-        } catch (error) {
-            console.error(error.message);
+            setCurrentPage(data.number); 
+        } else {
+            console.error('Failed to fetch products:', response.statusText);
+            setProducts([]);
         }
     };
 
     const handlePageChange = (newPage) => {
         setCurrentPage(newPage);
-        fetchProducts(newPage, pageSize, sortField, sortDir, searchTerm);
     };
 
     return (
@@ -72,13 +72,19 @@ function HomeDashboard() {
                     value={searchTerm}
                     onChange={handleSearchChange}
                 />
+                <select className="select-dropdown" value={searchType} onChange={e => setSearchType(e.target.value)}>
+                    <option value="title">Title</option>
+                    <option value="category">Category</option>
+                    <option value="manufacturer">Manufacturer</option>
+                </select>
+                    
                 <button className="search-button" type="submit">Search</button>
                 {isAdmin && (
-    <div className="admin-buttons">
-        <button className="admin-button" onClick={() => navigate('/admin/add-product')}>Add New Product</button>
-        <button className="admin-button" onClick={() => navigate('/admin/customers')}>View Customers</button>
-    </div>
-)}
+                    <div className="admin-buttons">
+                        <button className="admin-button" onClick={() => navigate('/admin/add-product')}>Add New Product</button>
+                        <button className="admin-button" onClick={() => navigate('/admin/customers')}>View Customers</button>
+                    </div>
+                )}
                 
                 <div className="account-actions">
                     <button className="account-button" onClick={() => setShowDropdown(!showDropdown)}>Account</button>
@@ -89,7 +95,7 @@ function HomeDashboard() {
                                     <button onClick={handleLogout}>Sign Out</button>
                                     {isCustomer && (
                                         <>
-                                                 <button onClick={() => navigate(`/profile/${user.id}`)}>View Profile</button>
+                                            <button onClick={() => navigate(`/profile/${user.id}`)}>View Profile</button>
                                             <button className="cart-button" onClick={() => navigate('/cart')}>View Cart</button>
                                         </>
                                     )}
@@ -98,9 +104,6 @@ function HomeDashboard() {
                                 <button onClick={() => navigate('/auth')}>Sign In</button>
                             )}
                         </div>
-                    )}
-                    {isCustomer && (
-                        <button className="cart-button" onClick={() => navigate('/cart')}>View Cart</button>
                     )}
                 </div>
             </form>
@@ -116,15 +119,13 @@ function HomeDashboard() {
 
             <div>
                 {products.length > 0 ? (
-                     <ul className="product-listing">
-                {products.map(product => (
-                    <li key={product.id} className="product-item">
-                          <Product key={product.id} product={product} onAddToCart={addToCart} onUpdateStock={handleUpdateStock} />
-                      
-
-                    </li>
-                ))}
-            </ul>
+                    <ul className="product-listing">
+                        {products.map(product => (
+                            <li key={product.id} className="product-item">
+                                <Product key={product.id} product={product} onAddToCart={addToCart} onUpdateStock={handleUpdateStock} />
+                            </li>
+                        ))}
+                    </ul>
                 ) : (
                     <p>No products found</p>
                 )}
@@ -151,7 +152,6 @@ function HomeDashboard() {
                 </button>
                 <p className="page-info">Page: {currentPage + 1}</p>
             </div>
-           
         </div>
     );
 }

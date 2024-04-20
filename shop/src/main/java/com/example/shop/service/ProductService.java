@@ -1,8 +1,10 @@
 package com.example.shop.service;
 
+import com.example.shop.SearchStrategy.ProductSearchContext;
 import com.example.shop.entity.Product;
 import com.example.shop.repository.ProductRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -13,14 +15,14 @@ import java.util.Optional;
 @Service
 public class ProductService {
 
-    private final ProductRepository productRepository;
+    @Autowired
+    private ProductRepository productRepository;
 
-    public ProductService(ProductRepository productRepository) {
-        this.productRepository = productRepository;
-    }
+    @Autowired
+    private ProductSearchContext searchContext;
 
-    public Page<Product> searchProducts(String searchTerm, Pageable pageable) {
-        return productRepository.searchByTitleCategoryManufacturer(searchTerm, pageable);
+    public Page<Product> searchProducts(String type, String searchTerm, Pageable pageable) {
+        return searchContext.search(type, searchTerm, pageable); 
     }
 
     public List<Product> findAllProducts() {

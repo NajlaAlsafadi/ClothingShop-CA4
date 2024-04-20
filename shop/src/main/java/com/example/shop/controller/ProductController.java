@@ -2,6 +2,7 @@ package com.example.shop.controller;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,16 +25,15 @@ import com.example.shop.service.ProductService;
 @RequestMapping("/api/products")
 public class ProductController {
 
-    private final ProductService productService;
+    @Autowired
+    private ProductService productService;
 
-    public ProductController(ProductService productService) {
-        this.productService = productService;
-    }
+
 
     @GetMapping("/search")
-    public Page<Product> searchProducts(@RequestParam String searchTerm,
+    public Page<Product> searchProducts(@RequestParam String type, @RequestParam String searchTerm,
                                         @PageableDefault(sort = "title", direction = Sort.Direction.ASC) Pageable pageable) {
-        return productService.searchProducts(searchTerm, pageable);
+        return productService.searchProducts(type, searchTerm, pageable);
     }
 
     @GetMapping("/all")

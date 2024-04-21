@@ -5,7 +5,11 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.example.shop.DiscountDecorator.CheckoutService;
+import com.example.shop.entity.Customer;
 import com.example.shop.entity.LoyaltyCard;
+import com.example.shop.repository.CustomerRepository;
 import com.example.shop.repository.LoyaltyCardRepository;
 import com.example.shop.service.LoyaltyCardService;
 
@@ -19,6 +23,12 @@ public class LoyaltyCardController {
     @Autowired
     private LoyaltyCardService loyaltyCardService;
 
+    @Autowired
+    private CheckoutService checkoutService;
+    
+    @Autowired
+    private CustomerRepository customerRepository;
+    
     @GetMapping("/{customerId}")
     public ResponseEntity<?> getLoyaltyCardByCustomerId(@PathVariable Long customerId) {
         LoyaltyCard card = loyaltyCardRepository.findByCustomerId(customerId);
@@ -39,4 +49,15 @@ public ResponseEntity<?> useLoyaltyPoints(@PathVariable Long customerId, @Reques
     }
 }
 
+@PostMapping("/checkout/{customerId}")
+    public ResponseEntity<?> checkoutWithDiscount(@PathVariable Long customerId, @RequestBody Map<String, Double> checkoutDetails) {
+        try {
+            Customer customer = customerRepository.findById(customerId).orElseThrow(() -> new RuntimeException("Customer not found"));
+            double price = checkoutDetails.get("price");
+            double discountedPrice = checkoutService.checkout(customer, price, 0);
+            return ResponseEntity.ok(Map.of("originalPrice", price, "discountedPrice", discountedPrice));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Checkout failed: " + e.getMessage());
+        }
+    }
 }

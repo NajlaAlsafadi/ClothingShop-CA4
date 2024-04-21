@@ -99,7 +99,7 @@ function HomeDashboard() {
                                         <>
                                          <button onClick={() => navigate(`/loyalty/${user.id}`)}>View Loaylty Card</button>
                                             <button onClick={() => navigate(`/profile/${user.id}`)}>View Profile</button>
-                                            <button className="cart-button" onClick={() => navigate('/cart')}>View Cart</button>
+                                            <button  onClick={() => navigate('/cart')}>View Cart</button>
                                         </>
                                     )}
                                 </>

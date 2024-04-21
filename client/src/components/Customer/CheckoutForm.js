@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../Context/CartContext';
 import { useAuth } from '../Context/AuthContext';
@@ -15,145 +15,108 @@ const CheckoutForm = () => {
     const [loyaltyPoints, setLoyaltyPoints] = useState(0);
     const [pointsToUse, setPointsToUse] = useState(0);
     const [total, setTotal] = useState(0);
-
-    const calculateTotal = useCallback(() => {
-        const totalCost = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-        setTotal(totalCost);
-    }, [cartItems]);
+    const [discountedTotal, setDiscountedTotal] = useState(0);
 
     useEffect(() => {
-        if (user.id) {
-            fetch(`/api/loyalty/${user.id}`)
-                .then(response => response.json())
-                .then(data => {
-                    setLoyaltyPoints(data.points);
-                })
-                .catch(err => console.error('Error fetching loyalty points:', err));
-            calculateTotal(); 
+        if (user?.id) {
+            Promise.all([
+                fetch(`/api/customers/${user.id}/address`).then(res => res.json()),
+                fetch(`/api/loyalty/${user.id}`).then(res => res.json()),
+            ]).then(([addressData, loyaltyData]) => {
+                setAddress(addressData);
+                setLoyaltyPoints(loyaltyData.points);
+                const initialTotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+                setTotal(initialTotal);
+                setDiscountedTotal(initialTotal); //initial discounted total based on cart items
+            }).catch(error => {
+                console.error('Error fetching data:', error);
+                setError('Failed to fetch user data');
+            });
         }
-    }, [user.id, cartItems, calculateTotal]);
+    }, [user?.id, cartItems]);
 
-    const handleApplyPoints = () => {
+    const handleApplyPoints = async () => {
         const pointsToApply = Math.min(pointsToUse, loyaltyPoints, total);
-        fetch(`/api/loyalty/${user.id}/use-points`, {
+        const response = await fetch(`/api/loyalty/${user.id}/use-points`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ points: pointsToApply })
-        })
-        .then(response => {
-            if (response.ok) {
-                setLoyaltyPoints(prev => prev - pointsToApply);
-                setTotal(prev => prev - pointsToApply);
-                alert(`Successfully applied ${pointsToApply} points to reduce the total cost.`);
-            } else {
-                alert('Failed to apply points.');
-            }
         });
-    };
-    
-    useEffect(() => {
-        if (user.id) {
-            const url = `/api/customers/${user.id}/address`;
-            console.log("Fetching address for user ID:", user.id);
-            fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                console.log("Address data received:", data);
-                setAddress(data);
-            })
-            .catch(err => {
-                setError(`Failed to fetch address: ${err.toString()}`);
-                console.error('Error fetching address:', err);
-            });
-        }
-    }, [user.id]);
 
-    const handleAddressConfirm = () => {
-        console.log("Address confirmed:", address);
-        setStep(2);
+        if (!response.ok) {
+            const errMsg = await response.text();
+            setError(`Failed to apply points: ${errMsg}`);
+            return;
+        }
+
+        const newDiscountedTotal = total - pointsToApply;
+        setLoyaltyPoints(prev => prev - pointsToApply);
+        setDiscountedTotal(newDiscountedTotal);
+        alert(`Successfully applied ${pointsToApply} points to reduce the total cost to €${newDiscountedTotal.toFixed(2)}`);
     };
 
     const handlePaymentConfirm = async () => {
         if (!/^\d{3}$/.test(cvv)) {
-            setError('CVV must be 3 digits');
+            setError('CVV must be 3 digits.');
             return;
         }
 
-        console.log("Attempting to validate CVV and card number", { cardNumber, cvv }); 
         try {
-            const formattedCardNumber = cardNumber.replace(/\s+/g, ''); 
-            const response = await fetch(`/api/validate-cvv`, {
+            const formattedCardNumber = cardNumber.replace(/\s+/g, '');
+            const response = await fetch(`/api/loyalty/checkout/${user.id}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cardNumber: formattedCardNumber, cvv, customerId: user.id })
+                body: JSON.stringify({
+                    price: discountedTotal  
+                })
             });
 
             if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || 'CVV validation failed');
+                throw new Error(await response.text());
             }
 
-            console.log("CVV and card number validated successfully");
-            setStep(3);
+            const { discountedPrice } = await response.json();
+            setDiscountedTotal(discountedPrice);
+            setStep(3);  
         } catch (error) {
             setError(`Payment confirmation failed: ${error.message}`);
-            console.error('Payment confirmation failed:', error);
         }
     };
 
     const handleOrderConfirm = async () => {
         if (cartItems.length === 0) {
-            setError('Your cart is empty');
+            setError('Your cart is empty.');
             return;
         }
-        const adjustedTotal = total - pointsToUse;
-        console.log("Confirming order with details:", { customerId: user.id, items: cartItems, cvv });
+
         try {
             const response = await fetch('/api/orders/confirm', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ customerId: user.id, 
-                    items: cartItems.map(item => ({ productId: item.id, quantity: item.quantity,  price: item.price 
-                    })), cvv, 
-                    totalAmount: adjustedTotal 
-                 })
+                body: JSON.stringify({
+                    customerId: user.id, 
+                    items: cartItems.map(item => ({
+                        productId: item.id,
+                        quantity: item.quantity,
+                        price: item.price
+                    })),
+                    cvv,
+                    totalAmount: discountedTotal
+                })
             });
 
             if (!response.ok) {
-                const errorText = await response.text()
-                try {
-                    const jsonError = JSON.parse(errorText);
-                    throw new Error(jsonError.error || 'Failed to confirm order');
-                } catch (jsonParseError) {
-                    throw new Error(errorText || 'Failed to confirm order');
-                }
+                throw new Error(await response.text());
             }
-            const orderData = await response.json(); 
-            const loyaltyResponse = await fetch(`/api/customers/${user.id}/loyalty/update`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amountSpent: orderData.totalAmount })
-            });
 
-            if (!loyaltyResponse.ok) {
-                const errorText = await loyaltyResponse.text();
-                console.error('Failed to update loyalty points:', errorText);
-            } else {
-                console.log("Loyalty points updated successfully");
-            }
-           
-            
+            const orderData = await response.json();
+            console.log("Order confirmed:", orderData);
             clearCart();
             navigate('/order-success');
         } catch (error) {
             setError(`Order confirmation failed: ${error.message}`);
-            console.error('Order confirmation failed:', error);
         }
     };
-
-    if (step === 1 && !address.street) {
-        return <div>Loading your address...</div>;
-    }
 
     return (
         <div>
@@ -162,7 +125,7 @@ const CheckoutForm = () => {
                 <div>
                     <h2>Confirm Address</h2>
                     <p>Address: {address.street}, {address.city}, {address.zipCode}, {address.country}</p>
-                    <button onClick={handleAddressConfirm}>Confirm Address</button>
+                    <button onClick={() => setStep(2)}>Confirm Address</button>
                 </div>
             )}
             {step === 2 && (
@@ -181,9 +144,9 @@ const CheckoutForm = () => {
                         placeholder="CVV"
                     />
                     <button onClick={handlePaymentConfirm}>Confirm Payment</button>
-</div>
-)}
- {step === 3 && (
+                </div>
+            )}
+            {step === 3 && (
                 <div>
                     <h2>Confirm Order</h2>
                     <p>Loyalty Points Available: {loyaltyPoints}</p>
@@ -194,13 +157,12 @@ const CheckoutForm = () => {
                         placeholder="Points to use"
                     />
                     <button onClick={handleApplyPoints}>Apply Points</button>
-                    <h3>Total Cost: €{total.toFixed(2)}</h3>
+                    <h3>Total Cost after Discount: €{discountedTotal.toFixed(2)}</h3>
                     <button onClick={handleOrderConfirm}>Confirm Order</button>
                 </div>
             )}
-
-</div>
-);
+        </div>
+    );
 };
 
 export default CheckoutForm;
